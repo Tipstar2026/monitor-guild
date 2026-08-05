@@ -18,26 +18,18 @@
 </head>
 <body>
   <div id="error-box"></div>
-  <div id="root">
-    <div style="padding: 40px; text-align: center; color: #8892a6;">
-      <h2>モニターGUILD を読み込んでいます...</h2>
-    </div>
-  </div>
+  <div id="root"><div style="padding: 40px; text-align: center; color: #8892a6;"><h2>モニターGUILD を読み込んでいます...</h2></div></div>
 
   <script>
     window.addEventListener('error', function(e) {
-      var errBox = document.getElementById('error-box');
-      if (errBox) {
-        errBox.style.display = 'block';
-        errBox.innerHTML = '<strong>アプリ起動エラー:</strong> ' + (e.message || e);
-      }
+      var b = document.getElementById('error-box');
+      if (b) { b.style.display = 'block'; b.innerHTML = '<strong>アプリ起動エラー:</strong> ' + (e.message || e); }
     });
   </script>
 
   <script type="text/babel">
     const { useState, useMemo, useEffect, createContext, useContext } = React;
 
-    // --- 1. Context & Utilities ---
     const LangContext = createContext({ lang: "ja", t: (k) => k });
     function useT() {
       const { lang, t } = useContext(LangContext);
@@ -48,9 +40,7 @@
       if (!urlStr || typeof urlStr !== "string") return "#";
       const trimmed = urlStr.trim();
       if (/^javascript:/i.test(trimmed) || /^data:/i.test(trimmed)) return "#";
-      if (!/^https?:\/\//i.test(trimmed)) {
-        return `https://${trimmed}`;
-      }
+      if (!/^https?:\/\//i.test(trimmed)) return `https://${trimmed}`;
       return trimmed;
     }
 
@@ -65,15 +55,7 @@
       document.body.removeChild(link);
     }
 
-    async function apiFetch(endpoint, method = "GET", body = null) {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({ status: 200, success: true, timestamp: new Date().toISOString() });
-        }, 120);
-      });
-    }
-
-    // --- 2. SVG Icons ---
+    // SVG Icons
     const Icon = ({ size = 16, color = "currentColor", strokeWidth = 1.8, children, style }) => (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle", ...style }}>
         {children}
@@ -121,7 +103,6 @@
       navBoard: { ja: "ボード", zh: "任务板" },
       roleMonitor: { ja: "モニター", zh: "监测者" },
       roleRequester: { ja: "依頼者（企業）", zh: "委托方" },
-      roleAdmin: { ja: "管理者", zh: "管理员" },
 
       heroBadge: { ja: "#PR表記必須ギルド", zh: "#PR标注必须公会" },
       heroTitleA: { ja: "商品を受け取り、", zh: "领取商品，传递" },
@@ -144,7 +125,6 @@
       btnRegister: { ja: "新規アカウント登録", zh: "注册新账号" },
       btnLogin: { ja: "ログイン", zh: "登录" },
       btnLogout: { ja: "ログアウト", zh: "退出登录" },
-      btnPWAInstall: { ja: "アプリをインストール (PWA)", zh: "安装应用 (PWA)" },
 
       tabMonitorReg: { ja: "モニター会員登録", zh: "监测者注册" },
       tabRequesterReg: { ja: "依頼者（企業）登録", zh: "委托方注册" },
@@ -156,9 +136,7 @@
 
       adminApproveBtn: { ja: "アカウントを承認する", zh: "批准账号" },
       adminBanBtn: { ja: "アカウント凍結", zh: "冻结账号" },
-      adminUnbanBtn: { ja: "凍結解除", zh: "解冻账号" },
-      btnExportCSV: { ja: "PR実績CSV出力", zh: "导出PR业绩CSV" },
-      btnExportDBJSON: { ja: "クラウドDB シードデータ(JSON)出力", zh: "导出数据库 (JSON)" },
+      adminUnbanBtn: { ja: "凍結解除", zh: "解凍解除" },
 
       footer1: { ja: "モニターGUILDは、商品の無償提供と引き換えの投稿依頼をマッチングする場です。金銭による有償レビューの仲介・代筆は一切行いません。", zh: "モニターGUILD 是产品免费提供换取发布内容的撮合平台，不进行任何有偿评论的撮合或代写。" },
       footer2: { ja: "投稿には広告表記（#PR等）が必須です。景品表示法および関連ガイドラインを遵守してご利用ください。", zh: "发布内容必须标注广告说明（#PR等）。请遵守景品表示法及相关规范使用本平台。" },
@@ -355,7 +333,7 @@
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {isLoginView ? (
                 <>
-                  <label className="mg-field"><span>メールアドレス</span><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" /></label>
+                  <label className="mg-field"><span>ID / メールアドレス</span><input required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ログインID または メールアドレス" /></label>
                   <label className="mg-field"><span>パスワード</span><input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></label>
                 </>
               ) : regType === "monitor" ? (
@@ -454,15 +432,41 @@
       };
 
       function handleRegisterSubmit(newUser) {
-        apiFetch("/api/reg", "POST", newUser).then(() => {
-          setPendingUsers((prev) => [...prev, newUser]);
-          setCurrentUser(newUser);
-          addNotification("登録申請を受け付けました。運営の審査・承認完了までお待ちください。");
-          showToast("登録申請を受け付けました。承認までお待ちください。");
-        });
+        setPendingUsers((prev) => [...prev, newUser]);
+        setCurrentUser(newUser);
+        addNotification("登録申請を受け付けました。運営の審査・承認完了までお待ちください。");
+        showToast("登録申請を受け付けました。承認までお待ちください。");
       }
 
       function handleLoginSubmit(email, password) {
+        // 1. Admin Account Credential
+        if ((email === "anken2026" || email === "anken2026@monitor-guild.jp") && password === "tipstar") {
+          const adminUser = { id: "admin_master", role: "admin", name: "管理者（運営本部）", status: "approved", email: "anken2026" };
+          setCurrentUser(adminUser);
+          setRole("admin");
+          showToast("🔑 管理者としてログインしました");
+          return;
+        }
+
+        // 2. Monitor Test Account Credential
+        if ((email === "monitor" || email === "monitor2026" || email === "monitor@example.com") && password === "tipstar") {
+          const monitorUser = { id: "u_monitor_test", role: "monitor", name: "山田 はな（公認モニター）", status: "approved", email: "monitor@example.com", sns: "https://instagram.com/demo" };
+          setCurrentUser(monitorUser);
+          setRole("monitor");
+          showToast("👤 モニター会員としてログインしました");
+          return;
+        }
+
+        // 3. Requester (Company) Test Account Credential
+        if ((email === "company" || email === "company2026" || email === "company@example.com") && password === "tipstar") {
+          const companyUser = { id: "u_company_test", role: "requester", name: "ルミエラ化粧品（加盟企業）", status: "approved", email: "company@example.com", companyName: "ルミエラ化粧品株式会社" };
+          setCurrentUser(companyUser);
+          setRole("requester");
+          showToast("🏢 依頼企業としてログインしました");
+          return;
+        }
+
+        // General Dynamic User Logins
         const approvedUser = approvedUsers.find((u) => u.email === email);
         const pendingUser = pendingUsers.find((u) => u.email === email);
         if (approvedUser) {
@@ -473,7 +477,7 @@
         } else if (pendingUser) {
           setCurrentUser(pendingUser);
         } else {
-          alert("登録審査中、またはアカウントが見つかりません。");
+          alert("ログイン情報が間違っているか、アカウントが見つかりません。");
         }
       }
 
@@ -549,10 +553,13 @@
                   <button className={lang === "ja" ? "active" : ""} onClick={() => setLang("ja")}>日本語</button>
                   <button className={lang === "zh" ? "active" : ""} onClick={() => setLang("zh")}>中文</button>
                 </div>
+
                 <div className="mg-role-tabs">
                   <button className={role === "monitor" ? "active" : ""} onClick={() => setRole("monitor")}><UserCircle2 size={13}/> {t("roleMonitor")}</button>
                   <button className={role === "requester" ? "active" : ""} onClick={() => setRole("requester")}><Crown size={13}/> {t("roleRequester")}</button>
-                  <button className={role === "admin" ? "active" : ""} onClick={() => setRole("admin")}><ShieldCheck size={13}/> {t("roleAdmin")} ({pendingUsers.length})</button>
+                  {currentUser && currentUser.role === "admin" && (
+                    <button className={role === "admin" ? "active" : ""} onClick={() => setRole("admin")}><ShieldCheck size={13}/> 管理パネル ({pendingUsers.length})</button>
+                  )}
                 </div>
 
                 <button className="mg-bell-btn" onClick={() => setShowNotifications(!showNotifications)}>
@@ -576,13 +583,13 @@
 
                 {currentUser ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 12, color: currentUser.status === "approved" ? "var(--gold-soft)" : "var(--terracotta)" }}>
-                      {currentUser.status === "approved" ? "👤 " + currentUser.name : currentUser.status === "suspended" ? "🚫 凍結: " + currentUser.name : "⏳ 承認待ち: " + currentUser.name}
+                    <span style={{ fontSize: 12, color: currentUser.role === "admin" ? "var(--teal)" : currentUser.status === "approved" ? "var(--gold-soft)" : "var(--terracotta)" }}>
+                      {currentUser.role === "admin" ? "🔑 管理者" : currentUser.status === "approved" ? "👤 " + currentUser.name : currentUser.status === "suspended" ? "🚫 凍結: " + currentUser.name : "⏳ 承認待ち: " + currentUser.name}
                     </span>
-                    <button className="mg-auth-btn-ghost" onClick={() => { setCurrentUser(null); localStorage.removeItem("mg_current_user"); }}><LogOut size={12}/> {t("btnLogout")}</button>
+                    <button className="mg-auth-btn-ghost" onClick={() => { setCurrentUser(null); setRole("monitor"); localStorage.removeItem("mg_current_user"); }}><LogOut size={12}/> {t("btnLogout")}</button>
                   </div>
                 ) : (
-                  <button className="mg-auth-btn" onClick={() => setShowAuthModal(true)}><UserPlus size={13}/> {t("btnRegister")}</button>
+                  <button className="mg-auth-btn" onClick={() => setShowAuthModal(true)}><LogIn size={13}/> {t("btnLogin")}</button>
                 )}
               </div>
             </header>
@@ -602,9 +609,8 @@
                 </div>
                 <h2 style={{ margin: "0 0 10px", fontSize: 20 }}>{t("pendingApprovalTitle")}</h2>
                 <p style={{ fontSize: 13.5, color: "var(--ink-muted)", margin: 0 }}>{t("pendingApprovalSub")}</p>
-                <p style={{ fontSize: 12, color: "var(--gold-soft)", marginTop: 14 }}>※ 上部タブから「管理者」ロールに切り替えると、管理画面で即座に承認テストが可能です。</p>
               </div>
-            ) : role === "admin" ? (
+            ) : role === "admin" && currentUser && currentUser.role === "admin" ? (
               <section className="mg-board">
                 <div className="mg-board-head">
                   <h2 className="mg-board-title"><ShieldCheck size={18}/> 管理パネル - クラウドDB ＆ 会員審査</h2>
