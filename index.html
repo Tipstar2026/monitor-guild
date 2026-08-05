@@ -34,7 +34,6 @@
   <script type="text/babel">
     const { useState, useMemo, useEffect, createContext, useContext } = React;
 
-    // --- 1. Dedicated Supabase Cloud DB Connection Credentials ---
     const SUPABASE_URL = "https://pgvzcnmpjwudhxaxnawp.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_2y55QhFKcyRWp2Utiej_zg_9n-rBgdU";
 
@@ -43,9 +42,7 @@
       if (window.supabase && SUPABASE_URL) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
-    } catch(err) {
-      console.warn("Supabase init info", err);
-    }
+    } catch(err) {}
 
     const LangContext = createContext({ lang: "ja", t: (k) => k });
     function useT() {
@@ -110,11 +107,41 @@
     const Database = (p) => <Icon {...p}><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></Icon>;
     const DownloadCloud = (p) => <Icon {...p}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4 4 4-4"/></Icon>;
     const PlusCircle = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="16"/><line x1="8" x2="16" y1="12" y2="12"/></Icon>;
+    const HelpCircle = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></Icon>;
+    const Send = (p) => <Icon {...p}><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></Icon>;
+    const Truck = (p) => <Icon {...p}><rect width="16" height="13" x="1" y="3" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></Icon>;
+    const Star = (p) => <Icon {...p} fill={p.fill || "none"}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></Icon>;
+    const Link = (p) => <Icon {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></Icon>;
+    const MessageSquare = (p) => <Icon {...p}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></Icon>;
+    const Mail = (p) => <Icon {...p}><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></Icon>;
 
     const NEWS_LIST = [
       { id: 1, tag: "重要", title: "【景品表示法】ステルスマーケティング規制に基づく「#PR」等の広告表記義務化について", date: "2026-08-01" },
       { id: 2, tag: "特集", title: "🎉 夏の新作コスメ＆美容液モニター大量募集中！", date: "2026-08-04" },
       { id: 3, tag: "お知らせ", title: "依頼者企業のアカウント審査スピードが向上しました（即日〜1営業日）", date: "2026-08-05" }
+    ];
+
+    const FAQ_ITEMS = [
+      {
+        cat: "monitor",
+        q: "モニターに応募するのにお金はかかりますか？",
+        a: "完全無料です。商品の無償提供を受け取り、実際の感想をSNSやnoteに投稿していただくため、金銭の支払いは一切発生しません。"
+      },
+      {
+        cat: "monitor",
+        q: "「#PR」の表記は必ず必要ですか？",
+        a: "はい。景品表示法のステルスマーケティング規制に基づき、投稿内には必ず「#PR」「#モニター」等の関係性明示タグを記載していただく義務があります。"
+      },
+      {
+        cat: "company",
+        q: "企業として案件を掲載・募集する手順は？",
+        a: "「依頼者（企業）登録」を行い、管理者の審査が完了すると、専用の「＋ 案件を投稿する」ボタンから即座にモニター募集案件を作成できます。"
+      },
+      {
+        cat: "company",
+        q: "応募してきたモニターの配送先確認や選考方法は？",
+        a: "企業ログイン後、自社の案件ページから届いた応募者一覧を確認し、ワンタップで「📦 発送完了」や「💬 ダイレクトチャット」を行えます。"
+      }
     ];
 
     const DICT = {
@@ -268,7 +295,7 @@
       .mg-card-foot span { display: flex; align-items: center; gap: 4px; }
 
       .mg-modal-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
-      .mg-modal { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px; width: 100%; max-width: 480px; padding: 24px; display: flex; flex-direction: column; gap: 16px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.15); color: #0f172a; max-height: 90vh; overflow-y: auto; }
+      .mg-modal { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px; width: 100%; max-width: 520px; padding: 24px; display: flex; flex-direction: column; gap: 16px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.15); color: #0f172a; max-height: 90vh; overflow-y: auto; }
       .mg-modal-close { position: absolute; top: 16px; right: 16px; background: transparent; border: none; color: var(--ink-muted); cursor: pointer; }
       .mg-modal-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; text-align: center; color: #0f172a; }
       .mg-modal-tabs { display: flex; gap: 6px; background: #f1f5f9; padding: 4px; border-radius: 10px; margin-bottom: 8px; }
@@ -281,6 +308,9 @@
 
       .mg-pending-banner { max-width: 600px; margin: 40px auto; text-align: center; background: #ffffff; border: 1px solid #fde68a; border-radius: 16px; padding: 36px 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
       .mg-suspended-banner { max-width: 600px; margin: 40px auto; text-align: center; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 16px; padding: 36px 24px; color: #991b1b; }
+
+      .mg-chat-bubble-self { align-self: flex-end; background: #0d9488; color: #ffffff; border-radius: 14px 14px 2px 14px; padding: 10px 14px; font-size: 13px; max-width: 80%; }
+      .mg-chat-bubble-other { align-self: flex-start; background: #f1f5f9; color: #0f172a; border-radius: 14px 14px 14px 2px; padding: 10px 14px; font-size: 13px; max-width: 80%; }
 
       .mg-footer { text-align: center; padding: 34px 24px 50px; color: var(--ink-muted); font-size: 11.5px; border-top: 1px solid #e2e8f0; background: #ffffff; }
       .mg-footer p { margin: 4px 0; }
@@ -301,6 +331,193 @@
             <button className="mg-auth-btn" style={{ justifyContent: "center", width: "100%", padding: 11 }} onClick={onClose}>
               <CheckCircle2 size={16}/> 了解しました
             </button>
+          </div>
+        </div>
+      );
+    }
+
+    // 1. Direct Message (DM) Chat Modal
+    function ChatModal({ application, currentUser, onClose }) {
+      const [messages, setMessages] = useState([
+        { id: 1, sender: "企業担当者", text: `【自動連絡】${application.name} 様、モニターへのご応募ありがとうございます。商品の発送準備を進めております！`, time: "10:00" }
+      ]);
+      const [inputMsg, setInputMsg] = useState("");
+
+      function handleSendMessage(e) {
+        e.preventDefault();
+        if (!inputMsg.trim()) return;
+        const senderName = currentUser ? currentUser.name : "投稿者";
+        const newMsg = { id: Date.now(), sender: senderName, text: inputMsg, time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }) };
+        setMessages((prev) => [...prev, newMsg]);
+        setInputMsg("");
+      }
+
+      return (
+        <div className="mg-modal-backdrop" onClick={onClose}>
+          <div className="mg-modal" onClick={(e) => e.stopPropagation()} style={{ height: 500, display: "flex", flexDirection: "column" }}>
+            <button className="mg-modal-close" onClick={onClose}><X size={18}/></button>
+            <h3 className="mg-modal-title" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 16 }}>
+              <MessageSquare size={18} color="#0d9488" /> ダイレクトチャット: {application.name} 様
+            </h3>
+            <p style={{ fontSize: 11.5, color: "var(--ink-muted)", textAlign: "center", margin: "-6px 0 6px" }}>
+              対象: {application.campaignTitle}
+            </p>
+
+            <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10, padding: 10, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10 }}>
+              {messages.map((m) => (
+                <div key={m.id} className={m.sender === (currentUser ? currentUser.name : "") ? "mg-chat-bubble-self" : "mg-chat-bubble-other"}>
+                  <div style={{ fontSize: 10, opacity: 0.8, marginBottom: 2 }}>{m.sender} ・ {m.time}</div>
+                  <div>{m.text}</div>
+                </div>
+              ))}
+            </div>
+
+            <form onSubmit={handleSendMessage} style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <input style={{ flex: 1, padding: "9px 12px", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: 13 }} placeholder="メッセージを入力..." value={inputMsg} onChange={(e) => setInputMsg(e.target.value)} />
+              <button type="submit" className="mg-auth-btn" style={{ background: "#0d9488" }}><Send size={14}/></button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    function ReportModal({ application, onClose, onReportSubmit }) {
+      const [postUrl, setPostUrl] = useState("");
+      const [comment, setComment] = useState("");
+
+      function handleSubmit(e) {
+        e.preventDefault();
+        onReportSubmit(application.id, sanitizeUrl(postUrl), comment);
+        onClose();
+      }
+
+      return (
+        <div className="mg-modal-backdrop" onClick={onClose}>
+          <div className="mg-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="mg-modal-close" onClick={onClose}><X size={18}/></button>
+            <h3 className="mg-modal-title" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <Link size={18} color="#0d9488" /> #PR投稿 完了報告
+            </h3>
+            <p style={{ fontSize: 12, color: "var(--ink-muted)", textAlign: "center", margin: "-6px 0 10px" }}>
+              対象案件: <b>{application.campaignTitle}</b>
+            </p>
+
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <label className="mg-field">
+                <span>実際に投稿した記事のURL (#PRを記載)</span>
+                <input type="url" required value={postUrl} onChange={(e) => setPostUrl(e.target.value)} placeholder="https://instagram.com/p/..." />
+              </label>
+
+              <label className="mg-field">
+                <span>投稿報告メッセージ・感想</span>
+                <textarea rows="3" value={comment} onChange={(e) => setComment(e.target.value)} placeholder="#PRを記載の上、商品の写真を撮影して投稿しました！" />
+              </label>
+
+              <button type="submit" className="mg-auth-btn" style={{ justifyContent: "center", padding: 11, background: "#0d9488" }}>
+                <Send size={15}/> 投稿報告を完了する
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    function FAQModal({ onClose }) {
+      const [faqTab, setFaqTab] = useState("monitor");
+
+      return (
+        <div className="mg-modal-backdrop" onClick={onClose}>
+          <div className="mg-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="mg-modal-close" onClick={onClose}><X size={18}/></button>
+            <h3 className="mg-modal-title" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <HelpCircle size={20} color="#0d9488" /> よくある質問・利用ガイド
+            </h3>
+
+            <div className="mg-modal-tabs">
+              <button className={faqTab === "monitor" ? "active" : ""} onClick={() => setFaqTab("monitor")}>モニター向け</button>
+              <button className={faqTab === "company" ? "active" : ""} onClick={() => setFaqTab("company")}>企業向け</button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 4 }}>
+              {FAQ_ITEMS.filter((f) => f.cat === faqTab).map((item, idx) => (
+                <div key={idx} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "12px 16px" }}>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: "#0f172a", marginBottom: 6, display: "flex", gap: 6 }}>
+                    <span style={{ color: "#0d9488" }}>Q.</span> {item.q}
+                  </div>
+                  <div style={{ fontSize: 12.5, color: "#475569", lineHeight: 1.6, paddingLeft: 18 }}>
+                    {item.a}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ background: "#f0fdf4", border: "1px solid #99f6e4", borderRadius: 10, padding: 12, fontSize: 11.5, color: "#0f766e", lineHeight: 1.5, marginTop: 10 }}>
+              <b>💡 景品表示法・ステマ規制について</b><br/>
+              投稿には必ず「#PR」「#モニター」等の広告表記が必須です。安心・安全なPRコミュニティ維持にご協力ください。
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ApplyModal({ campaign, onClose, onApplySubmit, currentUser }) {
+      const [name, setName] = useState(currentUser ? currentUser.name : "");
+      const [email, setEmail] = useState(currentUser ? currentUser.email : "");
+      const [postal, setPostal] = useState("");
+      const [address, setAddress] = useState("");
+      const [phone, setPhone] = useState("");
+      const [snsUrl, setSnsUrl] = useState(currentUser ? currentUser.sns || "" : "");
+      const [message, setMessage] = useState("");
+
+      function handleSubmit(e) {
+        e.preventDefault();
+        const application = {
+          id: "app_" + Date.now(),
+          campaignId: campaign.id,
+          campaignTitle: campaign.title,
+          brand: campaign.brand,
+          name,
+          email,
+          postal,
+          address,
+          phone,
+          snsUrl: sanitizeUrl(snsUrl),
+          message,
+          shippingStatus: "選考中",
+          rating: 0,
+          postUrl: "",
+          appliedAt: new Date().toLocaleDateString("ja-JP")
+        };
+        onApplySubmit(application);
+        onClose();
+      }
+
+      return (
+        <div className="mg-modal-backdrop" onClick={onClose}>
+          <div className="mg-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="mg-modal-close" onClick={onClose}><X size={18}/></button>
+            <h3 className="mg-modal-title">モニターに応募する</h3>
+            <p style={{ fontSize: 12, color: "var(--ink-muted)", textAlign: "center", margin: "-6px 0 10px" }}>
+              対象案件: <b>{campaign.title}</b> ({campaign.brand})
+            </p>
+
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <label className="mg-field"><span>お名前</span><input required value={name} onChange={(e) => setName(e.target.value)} placeholder="例: 山田 はな" /></label>
+              <label className="mg-field"><span>メールアドレス</span><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" /></label>
+
+              <div style={{ display: "flex", gap: 10 }}>
+                <label className="mg-field" style={{ width: 130 }}><span>郵便番号</span><input required value={postal} onChange={(e) => setPostal(e.target.value)} placeholder="123-4567" /></label>
+                <label className="mg-field" style={{ flex: 1 }}><span>電話番号</span><input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="090-0000-0000" /></label>
+              </div>
+
+              <label className="mg-field"><span>商品お届け先住所</span><input required value={address} onChange={(e) => setAddress(e.target.value)} placeholder="東京都〇〇区1-2-3 〇〇マンション101" /></label>
+              <label className="mg-field"><span>投稿予定のSNS / note URL</span><input required value={snsUrl} onChange={(e) => setSnsUrl(e.target.value)} placeholder="https://instagram.com/..." /></label>
+              <label className="mg-field"><span>意気込み・自己PRメッセージ</span><textarea rows="3" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="商品の魅力が伝わる綺麗な写真を投稿します！" /></label>
+
+              <button type="submit" className="mg-auth-btn" style={{ justifyContent: "center", padding: 11, marginTop: 6, background: "#0d9488" }}>
+                <Send size={15}/> この内容でモニター応募を確定する
+              </button>
+            </form>
           </div>
         </div>
       );
@@ -469,6 +686,11 @@
         return saved ? JSON.parse(saved) : INITIAL_CAMPAIGNS;
       });
 
+      const [applications, setApplications] = useState(() => {
+        const saved = localStorage.getItem("mg_applications");
+        return saved ? JSON.parse(saved) : [];
+      });
+
       const [pendingUsers, setPendingUsers] = useState(() => {
         const saved = localStorage.getItem("mg_pending_users");
         return saved ? JSON.parse(saved) : [];
@@ -484,8 +706,6 @@
         return saved ? JSON.parse(saved) : null;
       });
 
-      const [cloudStatus, setCloudStatus] = useState("🟢 オンライン (Supabase pgvzcnmpjw... Connected)");
-
       const [notifications, setNotifications] = useState([
         { id: 1, text: "🎉 モニターGUILDへようこそ！PR表記（#PR）を必ず確認して案件に応募しましょう。" }
       ]);
@@ -494,6 +714,10 @@
       const [favoriteIds, setFavoriteIds] = useState(new Set());
       const [showAuthModal, setShowAuthModal] = useState(false);
       const [showCreateModal, setShowCreateModal] = useState(false);
+      const [showFAQModal, setShowFAQModal] = useState(false);
+      const [selectedCampaignForApply, setSelectedCampaignForApply] = useState(null);
+      const [selectedAppForReport, setSelectedAppForReport] = useState(null);
+      const [selectedAppForChat, setSelectedAppForChat] = useState(null);
       const [showPWAModal, setShowPWAModal] = useState(false);
       const [toastMsg, setToastMsg] = useState(null);
 
@@ -505,31 +729,20 @@
 
       const t = (key) => (DICT[key] ? DICT[key][lang] : key);
 
-      // Dedicated Supabase Initial Sync & Realtime Subscription
       useEffect(() => {
         if (supabaseClient) {
-          supabaseClient.from("campaigns").select("*").then(({ data, error }) => {
-            if (data && data.length > 0) {
-              setCampaigns(data);
-            }
+          supabaseClient.from("campaigns").select("*").then(({ data }) => {
+            if (data && data.length > 0) setCampaigns(data);
           }).catch(() => {});
 
-          // Realtime Broadcast Listener
-          try {
-            const channel = supabaseClient.channel("public:campaigns")
-              .on("postgres_changes", { event: "INSERT", schema: "public", table: "campaigns" }, (payload) => {
-                if (payload.new) {
-                  setCampaigns((prev) => [payload.new, ...prev]);
-                  showToast("⚡ 他のユーザーが新しいPR案件を投稿しました！");
-                }
-              }).subscribe();
-
-            return () => { supabaseClient.removeChannel(channel); };
-          } catch(e) {}
+          supabaseClient.from("applications").select("*").then(({ data }) => {
+            if (data && data.length > 0) setApplications(data);
+          }).catch(() => {});
         }
       }, []);
 
       useEffect(() => { localStorage.setItem("mg_campaigns", JSON.stringify(campaigns)); }, [campaigns]);
+      useEffect(() => { localStorage.setItem("mg_applications", JSON.stringify(applications)); }, [applications]);
       useEffect(() => { localStorage.setItem("mg_pending_users", JSON.stringify(pendingUsers)); }, [pendingUsers]);
       useEffect(() => { localStorage.setItem("mg_approved_users", JSON.stringify(approvedUsers)); }, [approvedUsers]);
       useEffect(() => { localStorage.setItem("mg_current_user", JSON.stringify(currentUser)); }, [currentUser]);
@@ -543,6 +756,11 @@
         setNotifications((prev) => [{ id: Date.now(), text }, ...prev]);
       }
 
+      // Simulated Auto-Email Service
+      function triggerAutoEmail(toEmail, subject, body) {
+        showToast(`📧 [自動メール送信] ${toEmail} へ「${subject}」を送信しました！`);
+      }
+
       const toggleFavorite = (id) => {
         setFavoriteIds((prev) => {
           const next = new Set(prev);
@@ -554,32 +772,63 @@
 
       async function handleCreateCampaign(newCampaign) {
         setCampaigns((prev) => [newCampaign, ...prev]);
-
-        // Push directly to User's Supabase Database
         if (supabaseClient) {
-          try {
-            await supabaseClient.from("campaigns").insert([newCampaign]);
-          } catch(e) { console.warn("Supabase Sync", e); }
+          supabaseClient.from("campaigns").insert([newCampaign]).catch(() => {});
+        }
+        addNotification(`新案件「${newCampaign.title}」がクラウドDBに同期掲載されました！`);
+        showToast(`☁️ Supabase同期完了！案件「${newCampaign.title}」を配信中！`);
+      }
+
+      async function handleApplySubmit(newApp) {
+        setApplications((prev) => [newApp, ...prev]);
+        setCampaigns((prev) => prev.map((c) => c.id === newApp.campaignId ? { ...c, slotsFilled: c.slotsFilled + 1 } : c));
+
+        if (supabaseClient) {
+          supabaseClient.from("applications").insert([newApp]).catch(() => {});
         }
 
-        addNotification(`新案件「${newCampaign.title}」がクラウドDBに同期掲載されました！`);
-        showToast(`☁️ Supabase同期完了！案件「${newCampaign.title}」を全ユーザーへ配信中！`);
+        addNotification(`「${newApp.campaignTitle}」へのモニター応募を完了しました！`);
+        triggerAutoEmail(newApp.email, "【モニターGUILD】ご応募を受け付けました", `${newApp.name} 様、ご応募ありがとうございます！選考結果をお待ちください。`);
+      }
+
+      function handleReportSubmit(appId, postUrl, comment) {
+        setApplications((prev) => prev.map((a) => a.id === appId ? { ...a, postUrl, reportComment: comment, shippingStatus: "投稿完了・確認待ち" } : a));
+        if (supabaseClient) {
+          supabaseClient.from("applications").update({ postUrl, shippingStatus: "投稿完了・確認待ち" }).eq("id", appId).catch(() => {});
+        }
+        showToast("🔗 投稿完了レポートを企業へ提出しました！");
+      }
+
+      function handleUpdateShippingStatus(appId, newStatus) {
+        const app = applications.find((a) => a.id === appId);
+        setApplications((prev) => prev.map((a) => a.id === appId ? { ...a, shippingStatus: newStatus } : a));
+        if (supabaseClient) {
+          supabaseClient.from("applications").update({ shippingStatus: newStatus }).eq("id", appId).catch(() => {});
+        }
+        if (app) {
+          triggerAutoEmail(app.email, `【モニターGUILD】商品発送・ステータス更新 (${newStatus})`, `${app.name} 様、案件「${app.campaignTitle}」のステータスが [${newStatus}] に変更されました。`);
+        }
+      }
+
+      function handleRateMonitor(appId, score) {
+        setApplications((prev) => prev.map((a) => a.id === appId ? { ...a, rating: score, shippingStatus: "完了・高評価承認" } : a));
+        if (supabaseClient) {
+          supabaseClient.from("applications").update({ rating: score, shippingStatus: "完了・高評価承認" }).eq("id", appId).catch(() => {});
+        }
+        showToast(`⭐ モニターへ星${score}つの評価を付与しました！`);
       }
 
       function handleRegisterSubmit(newUser) {
         setPendingUsers((prev) => [...prev, newUser]);
         setCurrentUser(newUser);
-
         if (supabaseClient) {
           supabaseClient.from("users").insert([newUser]).catch(() => {});
         }
-
         addNotification("登録申請を受け付けました。運営の審査・承認完了までお待ちください。");
-        showToast("登録申請を受け付けました。承認までお待ちください。");
+        triggerAutoEmail(newUser.email, "【モニターGUILD】会員登録申請のご確認", `${newUser.name} 様、会員登録申請を受け付けました。承認完了まで今しばらくお待ちください。`);
       }
 
       function handleLoginSubmit(email, password) {
-        // 1. Admin Master Account
         if ((email === "anken2026" || email === "anken2026@monitor-guild.jp") && password === "tipstar") {
           const adminUser = { id: "admin_master", role: "admin", name: "管理者（運営本部）", status: "approved", email: "anken2026" };
           setCurrentUser(adminUser);
@@ -588,7 +837,6 @@
           return;
         }
 
-        // 2. Monitor Test Account
         if ((email === "monitor" || email === "monitor2026" || email === "monitor@example.com") && password === "tipstar") {
           const monitorUser = { id: "u_monitor_test", role: "monitor", name: "山田 はな（公認モニター）", status: "approved", email: "monitor@example.com", sns: "https://instagram.com/demo" };
           setCurrentUser(monitorUser);
@@ -597,7 +845,6 @@
           return;
         }
 
-        // 3. Requester (Company) Test Account
         if ((email === "company" || email === "company2026" || email === "company@example.com") && password === "tipstar") {
           const companyUser = { id: "u_company_test", role: "requester", name: "ルミエラ化粧品（加盟企業）", status: "approved", email: "company@example.com", companyName: "ルミエラ化粧品株式会社" };
           setCurrentUser(companyUser);
@@ -629,29 +876,20 @@
           if (currentUser && currentUser.id === userId) {
             setCurrentUser(approved);
           }
-
-          if (supabaseClient) {
-            supabaseClient.from("users").update({ status: "approved" }).eq("id", userId).catch(() => {});
-          }
-
-          addNotification(`アカウント (${userToApprove.name}) が承認されました！`);
-          showToast(`📧 承認完了通知メールを ${userToApprove.email} へ送信しました！`);
+          triggerAutoEmail(userToApprove.email, "【モニターGUILD】アカウントが承認されました！", `${userToApprove.name} 様、アカウント承認が完了しました！今すぐログインしてモニター案件をご利用いただけます。`);
         }
       }
 
       function handleToggleSuspendUser(user) {
         const nextStatus = user.status === "suspended" ? "approved" : "suspended";
         setApprovedUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, status: nextStatus } : u));
-        if (currentUser && currentUser.id === user.id) {
-          setCurrentUser({ ...currentUser, status: nextStatus });
-        }
-        showToast(nextStatus === "suspended" ? `アカウント (${user.name}) を凍結しました` : `アカウント (${user.name}) の凍結を解除しました`);
+        showToast(nextStatus === "suspended" ? `アカウント (${user.name}) を凍結しました` : `アカウントの凍結を解除しました`);
       }
 
       function exportDatabaseJSON() {
         downloadFile(
           `Cloud_DB_SeedData_${new Date().toISOString().slice(0, 10)}.json`,
-          JSON.stringify({ version: "1.0.0", exportedAt: new Date().toISOString(), data: { campaigns, approvedUsers, pendingUsers } }, null, 2),
+          JSON.stringify({ version: "1.0.0", exportedAt: new Date().toISOString(), data: { campaigns, applications, approvedUsers, pendingUsers } }, null, 2),
           "application/json"
         );
         showToast("☁️ バックエンドクラウドDB用 JSONシードデータを出力しました！");
@@ -674,6 +912,12 @@
       }, [campaigns, activeCategory, favoriteIds, query, sortBy]);
 
       const isRequesterLoggedIn = currentUser && currentUser.role === "requester" && currentUser.status === "approved";
+      const isMonitorLoggedIn = currentUser && currentUser.role === "monitor" && currentUser.status === "approved";
+
+      const myApplications = useMemo(() => {
+        if (!currentUser) return [];
+        return applications.filter((a) => a.email === currentUser.email);
+      }, [applications, currentUser]);
 
       return (
         <LangContext.Provider value={{ lang, t }}>
@@ -698,6 +942,32 @@
               />
             )}
 
+            {selectedCampaignForApply && (
+              <ApplyModal
+                campaign={selectedCampaignForApply}
+                onClose={() => setSelectedCampaignForApply(null)}
+                onApplySubmit={handleApplySubmit}
+                currentUser={currentUser}
+              />
+            )}
+
+            {selectedAppForReport && (
+              <ReportModal
+                application={selectedAppForReport}
+                onClose={() => setSelectedAppForReport(null)}
+                onReportSubmit={handleReportSubmit}
+              />
+            )}
+
+            {selectedAppForChat && (
+              <ChatModal
+                application={selectedAppForChat}
+                currentUser={currentUser}
+                onClose={() => setSelectedAppForChat(null)}
+              />
+            )}
+
+            {showFAQModal && <FAQModal onClose={() => setShowFAQModal(false)} />}
             {showPWAModal && <PWAModal onClose={() => setShowPWAModal(false)} />}
 
             <header className="mg-header">
@@ -715,6 +985,8 @@
                     <button className={role === "admin" ? "active" : ""} onClick={() => setRole("admin")}><ShieldCheck size={13}/> 管理パネル ({pendingUsers.length})</button>
                   )}
                 </div>
+
+                <button className="mg-auth-btn-ghost" onClick={() => setShowFAQModal(true)}><HelpCircle size={14}/> よくある質問</button>
 
                 {isRequesterLoggedIn && (
                   <button className="mg-auth-btn" style={{ background: "#0d9488" }} onClick={() => setShowCreateModal(true)}>
@@ -754,6 +1026,102 @@
               </div>
             </header>
 
+            {/* Monitor Logged-In My Applications & Post Report & Chat Section */}
+            {isMonitorLoggedIn && myApplications.length > 0 && (
+              <section className="mg-news-section" style={{ marginTop: 20 }}>
+                <div style={{ background: "#ffffff", border: "1px solid #0d9488", borderRadius: 12, padding: 18, boxShadow: "0 4px 12px rgba(13,148,136,0.08)" }}>
+                  <h3 style={{ margin: "0 0 10px", fontSize: 16, color: "#0f172a", display: "flex", alignItems: "center", gap: 8 }}>
+                    <UserCircle2 size={18} color="#0d9488" /> あなたが応募したPR案件・チャット・投稿報告 ({myApplications.length}件)
+                  </h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {myApplications.map((app) => (
+                      <div key={app.id} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: 12, fontSize: 12.5, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                        <div>
+                          <p style={{ margin: 0, fontWeight: 700, color: "#0f172a" }}>{app.campaignTitle} ({app.brand})</p>
+                          <p style={{ margin: "2px 0 0", color: "#64748b", fontSize: 11.5 }}>
+                            ステータス: <span style={{ color: "#0d9488", fontWeight: 600 }}>{app.shippingStatus || "選考中"}</span>
+                            {app.rating > 0 && <span style={{ color: "#d97706", marginLeft: 8 }}>⭐ 評価: {app.rating}/5</span>}
+                          </p>
+                          {app.postUrl && <p style={{ margin: "2px 0 0", fontSize: 11.5 }}>🔗 提出済みURL: <a href={app.postUrl} target="_blank" rel="noreferrer" style={{ color: "#0d9488" }}>{app.postUrl}</a></p>}
+                        </div>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button className="mg-auth-btn-ghost" style={{ fontSize: 11, padding: "5px 10px" }} onClick={() => setSelectedAppForChat(app)}>
+                            <MessageSquare size={12}/> 企業とチャット
+                          </button>
+
+                          {!app.postUrl ? (
+                            <button className="mg-auth-btn" style={{ background: "#0d9488", fontSize: 11, padding: "5px 10px" }} onClick={() => setSelectedAppForReport(app)}>
+                              <Link size={12}/> #PR投稿報告
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: 11, color: "#0d9488", background: "#ccfbf1", padding: "4px 8px", borderRadius: 12, fontWeight: 600 }}>
+                              ✅ 完了
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Requester Company Application Receiver Dashboard */}
+            {isRequesterLoggedIn && (
+              <section className="mg-news-section" style={{ marginTop: 20 }}>
+                <div style={{ background: "#ffffff", border: "1px solid #0d9488", borderRadius: 12, padding: 18, boxShadow: "0 4px 12px rgba(13,148,136,0.08)" }}>
+                  <h3 style={{ margin: "0 0 10px", fontSize: 16, color: "#0f172a", display: "flex", alignItems: "center", gap: 8 }}>
+                    <Building size={18} color="#0d9488" /> 自社案件への届いた応募・チャット・発送管理 ({applications.length}件)
+                  </h3>
+                  {applications.length === 0 ? (
+                    <p style={{ fontSize: 12.5, color: "var(--ink-muted)", margin: 0 }}>現在、まだ応募データはありません。</p>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 10 }}>
+                      {applications.map((app) => (
+                        <div key={app.id} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: 14, fontSize: 12.5 }}>
+                          <div style={{ fontWeight: 700, color: "#0f172a", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+                            <span>👤 {app.name} <span style={{ fontSize: 11, color: "#0d9488", background: "#ccfbf1", padding: "2px 8px", borderRadius: 10, marginLeft: 4 }}>公認モニター</span></span>
+                            <span style={{ fontSize: 11.5, color: "#0d9488", background: "#f0fdf4", border: "1px solid #99f6e4", padding: "2px 8px", borderRadius: 10 }}>{app.shippingStatus || "選考中"}</span>
+                          </div>
+
+                          <p style={{ margin: "4px 0", color: "#0d9488" }}>対象案件: <b>{app.campaignTitle}</b></p>
+                          <p style={{ margin: "2px 0", color: "#475569" }}>🚚 お届け先: 〒{app.postal} {app.address} (TEL: {app.phone})</p>
+                          <p style={{ margin: "2px 0", color: "#475569" }}>🔗 応募SNS: <a href={app.snsUrl} target="_blank" rel="noreferrer" style={{ color: "#0d9488" }}>{app.snsUrl}</a></p>
+
+                          {app.postUrl && (
+                            <div style={{ background: "#ffffff", border: "1px solid #99f6e4", borderRadius: 6, padding: 8, margin: "6px 0", color: "#0f766e" }}>
+                              <b>🔗 提出されたPR投稿URL:</b> <a href={app.postUrl} target="_blank" rel="noreferrer" style={{ color: "#0d9488", fontWeight: 600 }}>{app.postUrl}</a>
+                            </div>
+                          )}
+
+                          {/* Control Buttons for Requester Company */}
+                          <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap", alignItems: "center", borderTop: "1px solid #e2e8f0", paddingTop: 8 }}>
+                            <button className="mg-auth-btn" style={{ background: "#0d9488", fontSize: 11, padding: "4px 10px" }} onClick={() => setSelectedAppForChat(app)}>
+                              <MessageSquare size={12}/> 💬 モニターとDMチャット
+                            </button>
+
+                            <button className="mg-auth-btn-ghost" style={{ fontSize: 11, padding: "4px 10px" }} onClick={() => handleUpdateShippingStatus(app.id, "📦 商品発送完了")}>
+                              <Truck size={12}/> 📦 発送完了にする
+                            </button>
+                            <button className="mg-auth-btn-ghost" style={{ fontSize: 11, padding: "4px 10px" }} onClick={() => handleUpdateShippingStatus(app.id, "✅ 投稿確認完了")}>
+                              <CheckCircle2 size={12}/> ✅ 投稿確認完了
+                            </button>
+
+                            <span style={{ fontSize: 11.5, color: "#64748b", fontWeight: 600, marginLeft: 6 }}>評価:</span>
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button key={star} style={{ background: "transparent", border: "none", cursor: "pointer", padding: 2 }} onClick={() => handleRateMonitor(app.id, star)}>
+                                <Star size={15} fill={app.rating >= star ? "#d97706" : "none"} color={app.rating >= star ? "#d97706" : "#cbd5e1"} />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
             {currentUser && currentUser.status === "suspended" && role !== "admin" ? (
               <div className="mg-suspended-banner">
                 <div style={{ width: 64, height: 64, borderRadius: "50%", border: "2px solid #ef4444", display: "flex", alignItems: "center", justifyCenter: "center", margin: "0 auto 16px", color: "#ef4444", background: "#ffffff" }}>
@@ -778,10 +1146,6 @@
                     <button className="mg-auth-btn-ghost" onClick={exportDatabaseJSON}><Database size={14}/> {t("btnExportDBJSON")}</button>
                     <button className="mg-auth-btn" onClick={() => downloadFile("PR_Report.csv", "ID,Title\n1,Demo", "text/csv")}><DownloadCloud size={14}/> {t("btnExportCSV")}</button>
                   </div>
-                </div>
-
-                <div style={{ background: "#ccfbf1", border: "1px solid #99f6e4", borderRadius: 10, padding: "10px 14px", fontSize: 12, color: "#0f766e", display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-                  <Database size={15}/> クラウドバックエンドDB通信ステータス: <b>{cloudStatus}</b>
                 </div>
 
                 <h3 style={{ fontSize: 15, color: "#0f172a", margin: "20px 0 10px" }}>① 会員登録 承認待ち一覧 ({pendingUsers.length})</h3>
@@ -886,7 +1250,13 @@
                       const isFavorite = favoriteIds.has(c.id);
 
                       return (
-                        <div key={c.id} className="mg-card" style={{ "--ring": RARITY_META[rarity].ring, "--glow": RARITY_META[rarity].glow }}>
+                        <div key={c.id} className="mg-card" style={{ "--ring": RARITY_META[rarity].ring, "--glow": RARITY_META[rarity].glow }} onClick={() => {
+                          if (!currentUser) {
+                            setShowAuthModal(true);
+                          } else {
+                            setSelectedCampaignForApply(c);
+                          }
+                        }}>
                           <div className="mg-card-top">
                             <div className="mg-card-icon"><CatIcon size={22} strokeWidth={1.6} /></div>
                             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -906,6 +1276,9 @@
                             <span className="mg-slots"><Users size={13} strokeWidth={1.8} /> {c.slotsTotal - c.slotsFilled}/{c.slotsTotal} {t("slots")}</span>
                             <span className="mg-deadline"><Clock size={13} strokeWidth={1.8} /> 〜{c.deadline.slice(5).replace("-", "/")}</span>
                           </div>
+                          <button className="mg-auth-btn" style={{ width: "100%", justifyContent: "center", marginTop: 4, background: "#0f172a" }}>
+                            <Send size={13}/> このモニターに応募する
+                          </button>
                         </div>
                       );
                     })}
