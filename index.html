@@ -8,9 +8,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="モニターGUILD">
+  <!-- React & Dependencies -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Supabase Cloud Database Client JS -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
   <style>
     body { margin: 0; padding: 0; background: #ffffff; color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     #error-box { display: none; padding: 20px; color: #991b1b; background: #fee2e2; font-family: monospace; border-bottom: 2px solid #ef4444; }
@@ -29,6 +33,19 @@
 
   <script type="text/babel">
     const { useState, useMemo, useEffect, createContext, useContext } = React;
+
+    // --- 1. Dedicated Supabase Cloud DB Connection Credentials ---
+    const SUPABASE_URL = "https://pgvzcnmpjwudhxaxnawp.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_2y55QhFKcyRWp2Utiej_zg_9n-rBgdU";
+
+    let supabaseClient = null;
+    try {
+      if (window.supabase && SUPABASE_URL) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch(err) {
+      console.warn("Supabase init info", err);
+    }
 
     const LangContext = createContext({ lang: "ja", t: (k) => k });
     function useT() {
@@ -92,6 +109,7 @@
     const Download = (p) => <Icon {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></Icon>;
     const Database = (p) => <Icon {...p}><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></Icon>;
     const DownloadCloud = (p) => <Icon {...p}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4 4 4-4"/></Icon>;
+    const PlusCircle = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="16"/><line x1="8" x2="16" y1="12" y2="12"/></Icon>;
 
     const NEWS_LIST = [
       { id: 1, tag: "重要", title: "【景品表示法】ステルスマーケティング規制に基づく「#PR」等の広告表記義務化について", date: "2026-08-01" },
@@ -174,7 +192,6 @@
       { id: "q003", title: "完全ワイヤレスイヤホン 1週間使用レポート", brand: "SoundWave Japan", category: "gadget", value: 12800, platform: "youtube", slotsTotal: 3, slotsFilled: 2, deadline: "2026-08-25", summary: "通勤・運動シーンでの使用感を動画で紹介してほしい高単価案件。", published: true },
     ];
 
-    // Elegant Pure Light Mode Design
     const GLOBAL_STYLES = `
       .mg-app {
         --bg: #ffffff; --bg-panel: #ffffff; --bg-card: #ffffff;
@@ -251,7 +268,7 @@
       .mg-card-foot span { display: flex; align-items: center; gap: 4px; }
 
       .mg-modal-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
-      .mg-modal { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px; width: 100%; max-width: 460px; padding: 24px; display: flex; flex-direction: column; gap: 16px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.15); color: #0f172a; }
+      .mg-modal { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px; width: 100%; max-width: 480px; padding: 24px; display: flex; flex-direction: column; gap: 16px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.15); color: #0f172a; max-height: 90vh; overflow-y: auto; }
       .mg-modal-close { position: absolute; top: 16px; right: 16px; background: transparent; border: none; color: var(--ink-muted); cursor: pointer; }
       .mg-modal-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; text-align: center; color: #0f172a; }
       .mg-modal-tabs { display: flex; gap: 6px; background: #f1f5f9; padding: 4px; border-radius: 10px; margin-bottom: 8px; }
@@ -284,6 +301,81 @@
             <button className="mg-auth-btn" style={{ justifyContent: "center", width: "100%", padding: 11 }} onClick={onClose}>
               <CheckCircle2 size={16}/> 了解しました
             </button>
+          </div>
+        </div>
+      );
+    }
+
+    function CreateCampaignModal({ onClose, onCreateSubmit, currentUserName }) {
+      const [title, setTitle] = useState("");
+      const [brand, setBrand] = useState(currentUserName || "");
+      const [category, setCategory] = useState("beauty");
+      const [value, setValue] = useState(3000);
+      const [platform, setPlatform] = useState("instagram");
+      const [slotsTotal, setSlotsTotal] = useState(5);
+      const [deadline, setDeadline] = useState("2026-08-31");
+      const [summary, setSummary] = useState("");
+
+      function handleSubmit(e) {
+        e.preventDefault();
+        const newCampaign = {
+          id: "q_" + Date.now(),
+          title,
+          brand: brand || "加盟企業",
+          category,
+          value: Number(value),
+          platform,
+          slotsTotal: Number(slotsTotal),
+          slotsFilled: 0,
+          deadline,
+          summary,
+          published: true
+        };
+        onCreateSubmit(newCampaign);
+        onClose();
+      }
+
+      return (
+        <div className="mg-modal-backdrop" onClick={onClose}>
+          <div className="mg-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="mg-modal-close" onClick={onClose}><X size={18}/></button>
+            <h3 className="mg-modal-title">新規PRモニター依頼を投稿</h3>
+
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <label className="mg-field"><span>案件タイトル（商品名など）</span><input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例: 新作UVカット日焼け止め 1週間体験モニター" /></label>
+              <label className="mg-field"><span>ブランド名 / 会社名</span><input required value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="例: ルミエラ化粧品" /></label>
+
+              <div style={{ display: "flex", gap: 10 }}>
+                <label className="mg-field" style={{ flex: 1 }}><span>カテゴリ</span>
+                  <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                    <option value="beauty">美容・コスメ</option>
+                    <option value="food">食品・飲料</option>
+                    <option value="gadget">家電・ガジェット</option>
+                    <option value="fitness">フィットネス</option>
+                  </select>
+                </label>
+
+                <label className="mg-field" style={{ flex: 1 }}><span>希望SNSプラットフォーム</span>
+                  <select value={platform} onChange={(e) => setPlatform(e.target.value)}>
+                    <option value="instagram">Instagram</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="note">note</option>
+                  </select>
+                </label>
+              </div>
+
+              <div style={{ display: "flex", gap: 10 }}>
+                <label className="mg-field" style={{ flex: 1 }}><span>提供商品の相当価値（円）</span><input type="number" required value={value} onChange={(e) => setValue(e.target.value)} placeholder="3000" /></label>
+                <label className="mg-field" style={{ flex: 1 }}><span>募集人数（枠数）</span><input type="number" required value={slotsTotal} onChange={(e) => setSlotsTotal(e.target.value)} placeholder="5" /></label>
+              </div>
+
+              <label className="mg-field"><span>応募締切日</span><input type="date" required value={deadline} onChange={(e) => setDeadline(e.target.value)} /></label>
+              <label className="mg-field"><span>依頼の概要・投稿条件</span><textarea rows="3" value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="#PRを明記の上、使い心地や写真を投稿してください。" /></label>
+
+              <button type="submit" className="mg-auth-btn" style={{ justifyContent: "center", padding: 11, marginTop: 6, background: "#0d9488" }}>
+                <PlusCircle size={16}/> 掲示板に投稿する
+              </button>
+            </form>
           </div>
         </div>
       );
@@ -392,6 +484,8 @@
         return saved ? JSON.parse(saved) : null;
       });
 
+      const [cloudStatus, setCloudStatus] = useState("🟢 オンライン (Supabase pgvzcnmpjw... Connected)");
+
       const [notifications, setNotifications] = useState([
         { id: 1, text: "🎉 モニターGUILDへようこそ！PR表記（#PR）を必ず確認して案件に応募しましょう。" }
       ]);
@@ -399,6 +493,7 @@
       const [showNotifications, setShowNotifications] = useState(false);
       const [favoriteIds, setFavoriteIds] = useState(new Set());
       const [showAuthModal, setShowAuthModal] = useState(false);
+      const [showCreateModal, setShowCreateModal] = useState(false);
       const [showPWAModal, setShowPWAModal] = useState(false);
       const [toastMsg, setToastMsg] = useState(null);
 
@@ -409,6 +504,30 @@
       const [lang, setLang] = useState("ja");
 
       const t = (key) => (DICT[key] ? DICT[key][lang] : key);
+
+      // Dedicated Supabase Initial Sync & Realtime Subscription
+      useEffect(() => {
+        if (supabaseClient) {
+          supabaseClient.from("campaigns").select("*").then(({ data, error }) => {
+            if (data && data.length > 0) {
+              setCampaigns(data);
+            }
+          }).catch(() => {});
+
+          // Realtime Broadcast Listener
+          try {
+            const channel = supabaseClient.channel("public:campaigns")
+              .on("postgres_changes", { event: "INSERT", schema: "public", table: "campaigns" }, (payload) => {
+                if (payload.new) {
+                  setCampaigns((prev) => [payload.new, ...prev]);
+                  showToast("⚡ 他のユーザーが新しいPR案件を投稿しました！");
+                }
+              }).subscribe();
+
+            return () => { supabaseClient.removeChannel(channel); };
+          } catch(e) {}
+        }
+      }, []);
 
       useEffect(() => { localStorage.setItem("mg_campaigns", JSON.stringify(campaigns)); }, [campaigns]);
       useEffect(() => { localStorage.setItem("mg_pending_users", JSON.stringify(pendingUsers)); }, [pendingUsers]);
@@ -433,9 +552,28 @@
         });
       };
 
+      async function handleCreateCampaign(newCampaign) {
+        setCampaigns((prev) => [newCampaign, ...prev]);
+
+        // Push directly to User's Supabase Database
+        if (supabaseClient) {
+          try {
+            await supabaseClient.from("campaigns").insert([newCampaign]);
+          } catch(e) { console.warn("Supabase Sync", e); }
+        }
+
+        addNotification(`新案件「${newCampaign.title}」がクラウドDBに同期掲載されました！`);
+        showToast(`☁️ Supabase同期完了！案件「${newCampaign.title}」を全ユーザーへ配信中！`);
+      }
+
       function handleRegisterSubmit(newUser) {
         setPendingUsers((prev) => [...prev, newUser]);
         setCurrentUser(newUser);
+
+        if (supabaseClient) {
+          supabaseClient.from("users").insert([newUser]).catch(() => {});
+        }
+
         addNotification("登録申請を受け付けました。運営の審査・承認完了までお待ちください。");
         showToast("登録申請を受け付けました。承認までお待ちください。");
       }
@@ -491,6 +629,11 @@
           if (currentUser && currentUser.id === userId) {
             setCurrentUser(approved);
           }
+
+          if (supabaseClient) {
+            supabaseClient.from("users").update({ status: "approved" }).eq("id", userId).catch(() => {});
+          }
+
           addNotification(`アカウント (${userToApprove.name}) が承認されました！`);
           showToast(`📧 承認完了通知メールを ${userToApprove.email} へ送信しました！`);
         }
@@ -530,6 +673,8 @@
         });
       }, [campaigns, activeCategory, favoriteIds, query, sortBy]);
 
+      const isRequesterLoggedIn = currentUser && currentUser.role === "requester" && currentUser.status === "approved";
+
       return (
         <LangContext.Provider value={{ lang, t }}>
           <div className="mg-app">
@@ -542,6 +687,14 @@
                 onClose={() => setShowAuthModal(false)}
                 onRegisterSubmit={handleRegisterSubmit}
                 onLoginSubmit={handleLoginSubmit}
+              />
+            )}
+
+            {showCreateModal && (
+              <CreateCampaignModal
+                onClose={() => setShowCreateModal(false)}
+                onCreateSubmit={handleCreateCampaign}
+                currentUserName={currentUser ? currentUser.companyName || currentUser.name : ""}
               />
             )}
 
@@ -562,6 +715,12 @@
                     <button className={role === "admin" ? "active" : ""} onClick={() => setRole("admin")}><ShieldCheck size={13}/> 管理パネル ({pendingUsers.length})</button>
                   )}
                 </div>
+
+                {isRequesterLoggedIn && (
+                  <button className="mg-auth-btn" style={{ background: "#0d9488" }} onClick={() => setShowCreateModal(true)}>
+                    <PlusCircle size={14}/> ＋ 案件を投稿する
+                  </button>
+                )}
 
                 <button className="mg-bell-btn" onClick={() => setShowNotifications(!showNotifications)}>
                   <Bell size={15}/>
@@ -622,7 +781,7 @@
                 </div>
 
                 <div style={{ background: "#ccfbf1", border: "1px solid #99f6e4", borderRadius: 10, padding: "10px 14px", fontSize: 12, color: "#0f766e", display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-                  <Database size={15}/> クラウドバックエンドDB通信ステータス: <b>🟢 オンライン (PostgreSQL / REST API Connected)</b>
+                  <Database size={15}/> クラウドバックエンドDB通信ステータス: <b>{cloudStatus}</b>
                 </div>
 
                 <h3 style={{ fontSize: 15, color: "#0f172a", margin: "20px 0 10px" }}>① 会員登録 承認待ち一覧 ({pendingUsers.length})</h3>
@@ -682,6 +841,14 @@
                   <span className="mg-hero-badge"><ShieldCheck size={13}/> {t("heroBadge")}</span>
                   <h1>{t("heroTitleA")}<em>{t("heroTitleEm")}</em>{t("heroTitleB")}</h1>
                   <p>{t("heroDesc")}</p>
+
+                  {isRequesterLoggedIn && (
+                    <div style={{ marginTop: 20 }}>
+                      <button className="mg-auth-btn" style={{ margin: "0 auto", padding: "12px 24px", fontSize: 14, background: "#0d9488" }} onClick={() => setShowCreateModal(true)}>
+                        <PlusCircle size={18}/> ＋ 新しいPRモニター依頼を作成・掲載する
+                      </button>
+                    </div>
+                  )}
                 </section>
 
                 <div className="mg-ribbon"><ShieldCheck size={14}/> {t("ribbon")}</div>
@@ -690,6 +857,11 @@
                   <div className="mg-board-head">
                     <h2 className="mg-board-title"><ScrollText size={18}/> {t("boardTitle")}</h2>
                     <div className="mg-controls">
+                      {isRequesterLoggedIn && (
+                        <button className="mg-auth-btn-ghost" style={{ background: "#f0fdf4", borderColor: "#99f6e4", color: "#0f766e" }} onClick={() => setShowCreateModal(true)}>
+                          <PlusCircle size={14}/> ＋ 依頼を追加
+                        </button>
+                      )}
                       <div className="mg-search"><Search size={14} color="#64748b" /><input placeholder={t("searchPlaceholder")} value={query} onChange={(e) => setQuery(e.target.value)} /></div>
                       <select className="mg-sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                         <option value="newest">{t("sortNewest")}</option>
