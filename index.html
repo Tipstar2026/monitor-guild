@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>モニターGUILD - 商品モニター＆PR投稿ギルド</title>
+  <title>モニターギルド - 商品モニター＆PR投稿ギルド</title>
   <meta name="theme-color" content="#ffffff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="モニターGUILD">
+  <meta name="apple-mobile-web-app-title" content="モニターギルド">
   <!-- React & Dependencies -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -22,7 +22,7 @@
 </head>
 <body>
   <div id="error-box"></div>
-  <div id="root"><div style="padding: 40px; text-align: center; color: #64748b;"><h2>モニターGUILD を読み込んでいます...</h2></div></div>
+  <div id="root"><div style="padding: 40px; text-align: center; color: #64748b;"><h2>モニターギルド を読み込んでいます...</h2></div></div>
 
   <script>
     window.addEventListener('error', function(e) {
@@ -185,9 +185,9 @@
 
       ribbon: { ja: "すべての投稿には #PR 表記が必須です。景品表示法・ステマ規制を遵守のうえご利用ください。", zh: "所有发布内容均须标注 #PR。请遵守景品表示法及反隐性广告规定。" },
 
-      footer1: { ja: "モニターGUILDは、商品の無償提供と引き換えの投稿依頼をマッチングする場です。金銭による有償レビューの仲介・代筆は一切行いません。", zh: "モニターGUILD 是产品免费提供换取发布内容的撮合平台，不进行任何有偿评论的撮合或代写。" },
+      footer1: { ja: "モニターギルドは、商品の無償提供と引き換えの投稿依頼をマッチングする場です。金銭による有償レビューの仲介・代筆は一切行いません。", zh: "モニターギルド 是产品免费提供换取发布内容的撮合平台，不进行任何有偿评论的撮合或代写。" },
       footer2: { ja: "投稿には広告表記（#PR等）が必須です。景品表示法および関連ガイドラインを遵守してご利用ください。", zh: "发布内容必须标注广告说明（#PR等）。请遵守景品表示法及相关规范使用本平台。" },
-      footer3: { ja: "© モニターGUILD", zh: "© モニターGUILD" },
+      footer3: { ja: "© モニターギルド", zh: "© モニターギルド" },
     };
 
     const CATEGORY_META = {
@@ -755,7 +755,7 @@
       });
 
       const [notifications, setNotifications] = useState([
-        { id: 1, text: "🎉 モニターGUILDへようこそ！PR表記（#PR）を必ず確認して案件に応募しましょう。" }
+        { id: 1, text: "🎉 モニターギルドへようこそ！PR表記（#PR）を必ず確認して案件に応募しましょう。" }
       ]);
 
       const [showNotifications, setShowNotifications] = useState(false);
@@ -836,7 +836,7 @@
         }
 
         addNotification(`「${newApp.campaignTitle}」へのモニター応募を完了しました！`);
-        triggerAutoEmail(newApp.email, "【モニターGUILD】ご応募を受け付けました", `${newApp.name} 様、ご応募ありがとうございます！選考結果をお待ちください。`);
+        triggerAutoEmail(newApp.email, "【モニターギルド】ご応募を受け付けました", `${newApp.name} 様、ご応募ありがとうございます！選考結果をお待ちください。`);
       }
 
       function handleReportSubmit(appId, postUrl, comment) {
@@ -854,7 +854,7 @@
           supabaseClient.from("applications").update({ shippingStatus: newStatus }).eq("id", appId).catch(() => {});
         }
         if (app) {
-          triggerAutoEmail(app.email, `【モニターGUILD】商品発送・ステータス更新 (${newStatus})`, `${app.name} 様、案件「${app.campaignTitle}」のステータスが [${newStatus}] に変更されました。`);
+          triggerAutoEmail(app.email, `【モニターギルド】商品発送・ステータス更新 (${newStatus})`, `${app.name} 様、案件「${app.campaignTitle}」のステータスが [${newStatus}] に変更されました。`);
         }
       }
 
@@ -873,7 +873,7 @@
           supabaseClient.from("users").insert([newUser]).catch(() => {});
         }
         addNotification("登録申請を受け付けました。運営の審査・承認完了までお待ちください。");
-        triggerAutoEmail(newUser.email, "【モニターGUILD】会員登録申請のご確認", `${newUser.name} 様、会員登録申請を受け付けました。承認完了まで今しばらくお待ちください。`);
+        triggerAutoEmail(newUser.email, "【モニターギルド】会員登録申請のご確認", `${newUser.name} 様、会員登録申請を受け付けました。承認完了まで今しばらくお待ちください。`);
       }
 
       function handleLoginSubmit(email, password) {
@@ -924,7 +924,7 @@
           if (currentUser && currentUser.id === userId) {
             setCurrentUser(approved);
           }
-          triggerAutoEmail(userToApprove.email, "【モニターGUILD】アカウントが承認されました！", `${userToApprove.name} 様、アカウント承認が完了しました！今すぐログインしてモニター案件をご利用いただけます。`);
+          triggerAutoEmail(userToApprove.email, "【モニターギルド】アカウントが承認されました！", `${userToApprove.name} 様、アカウント承認が完了しました！今すぐログインしてモニター案件をご利用いただけます。`);
         }
       }
 
@@ -1037,7 +1037,7 @@
             {showPWAModal && <PWAModal onClose={() => setShowPWAModal(false)} />}
 
             <header className="mg-header">
-              <div className="mg-logo"><span className="mg-logo-mark"><ScrollText size={16} strokeWidth={2} /></span>モニターGUILD</div>
+              <div className="mg-logo"><span className="mg-logo-mark"><ScrollText size={16} strokeWidth={2} /></span>モニターギルド</div>
               <div className="mg-header-right">
                 <div className="mg-lang-toggle">
                   <button className={lang === "ja" ? "active" : ""} onClick={() => setLang("ja")}>日本語</button>
