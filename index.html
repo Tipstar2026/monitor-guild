@@ -183,6 +183,8 @@
       adminBanBtn: { ja: "アカウント凍結", zh: "冻结账号" },
       adminUnbanBtn: { ja: "凍結解除", zh: "解凍解除" },
 
+      ribbon: { ja: "すべての投稿には #PR 表記が必須です。景品表示法・ステマ規制を遵守のうえご利用ください。", zh: "所有发布内容均须标注 #PR。请遵守景品表示法及反隐性广告规定。" },
+
       footer1: { ja: "モニターGUILDは、商品の無償提供と引き換えの投稿依頼をマッチングする場です。金銭による有償レビューの仲介・代筆は一切行いません。", zh: "モニターGUILD 是产品免费提供换取发布内容的撮合平台，不进行任何有偿评论的撮合或代写。" },
       footer2: { ja: "投稿には広告表記（#PR等）が必須です。景品表示法および関連ガイドラインを遵守してご利用ください。", zh: "发布内容必须标注广告说明（#PR等）。请遵守景品表示法及相关规范使用本平台。" },
       footer3: { ja: "© モニターGUILD", zh: "© モニターGUILD" },
@@ -245,7 +247,7 @@
       .mg-bell-btn { position: relative; background: #ffffff; border: 1px solid #cbd5e1; color: var(--ink); padding: 8px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
       .mg-bell-badge { position: absolute; top: -2px; right: -2px; width: 9px; height: 9px; border-radius: 50%; background: var(--terracotta); }
 
-      .mg-notif-dropdown { position: absolute; top: 60px; right: 80px; z-index: 90; width: 300px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 10px; }
+      .mg-notif-dropdown { position: fixed; top: 64px; right: 20px; z-index: 200; width: 310px; max-height: 400px; overflow-y: auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 10px; }
       .mg-notif-item { font-size: 12px; padding: 8px; border-bottom: 1px solid #f1f5f9; color: var(--ink); }
 
       .mg-toast { position: fixed; top: 70px; right: 20px; z-index: 150; background: #0f172a; border: 1px solid #334155; color: #ffffff; padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.15); animation: toast-in .3s cubic-bezier(.2,1.5,.4,1); }
@@ -338,9 +340,14 @@
 
     // 1. Direct Message (DM) Chat Modal
     function ChatModal({ application, currentUser, onClose }) {
-      const [messages, setMessages] = useState([
-        { id: 1, sender: "企業担当者", text: `【自動連絡】${application.name} 様、モニターへのご応募ありがとうございます。商品の発送準備を進めております！`, time: "10:00" }
-      ]);
+      const storageKey = `mg_chat_${application.id}`;
+      const [messages, setMessages] = useState(() => {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) return JSON.parse(saved);
+        return [
+          { id: 1, sender: "企業担当者", text: `【自動連絡】${application.name} 様、モニターへのご応募ありがとうございます。商品の発送準備を進めております！`, time: "10:00" }
+        ];
+      });
       const [inputMsg, setInputMsg] = useState("");
 
       function handleSendMessage(e) {
@@ -348,7 +355,11 @@
         if (!inputMsg.trim()) return;
         const senderName = currentUser ? currentUser.name : "投稿者";
         const newMsg = { id: Date.now(), sender: senderName, text: inputMsg, time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }) };
-        setMessages((prev) => [...prev, newMsg]);
+        setMessages((prev) => {
+          const updated = [...prev, newMsg];
+          localStorage.setItem(storageKey, JSON.stringify(updated));
+          return updated;
+        });
         setInputMsg("");
       }
 
@@ -919,6 +930,23 @@
         return applications.filter((a) => a.email === currentUser.email);
       }, [applications, currentUser]);
 
+      // 企業が投稿した案件IDセット（自社案件の応募のみ表示するため）
+      const myCampaignIds = useMemo(() => {
+        if (!isRequesterLoggedIn) return new Set();
+        return new Set(campaigns.filter((c) => c.brand === (currentUser.companyName || currentUser.name)).map((c) => c.id));
+      }, [campaigns, currentUser, isRequesterLoggedIn]);
+
+      const myReceivedApplications = useMemo(() => {
+        if (!isRequesterLoggedIn) return [];
+        if (myCampaignIds.size === 0) return applications; // フィルタ対象がない場合は全件表示
+        return applications.filter((a) => myCampaignIds.has(a.campaignId));
+      }, [applications, myCampaignIds, isRequesterLoggedIn]);
+
+      // 応募済みキャンペーンIDセット（重複応募チェック用）
+      const appliedCampaignIds = useMemo(() => {
+        return new Set(myApplications.map((a) => a.campaignId));
+      }, [myApplications]);
+
       return (
         <LangContext.Provider value={{ lang, t }}>
           <div className="mg-app">
@@ -1071,13 +1099,13 @@
               <section className="mg-news-section" style={{ marginTop: 20 }}>
                 <div style={{ background: "#ffffff", border: "1px solid #0d9488", borderRadius: 12, padding: 18, boxShadow: "0 4px 12px rgba(13,148,136,0.08)" }}>
                   <h3 style={{ margin: "0 0 10px", fontSize: 16, color: "#0f172a", display: "flex", alignItems: "center", gap: 8 }}>
-                    <Building size={18} color="#0d9488" /> 自社案件への届いた応募・チャット・発送管理 ({applications.length}件)
+                    <Building size={18} color="#0d9488" /> 自社案件への届いた応募・チャット・発送管理 ({myReceivedApplications.length}件)
                   </h3>
-                  {applications.length === 0 ? (
-                    <p style={{ fontSize: 12.5, color: "var(--ink-muted)", margin: 0 }}>現在、まだ応募データはありません。</p>
+                  {myReceivedApplications.length === 0 ? (
+                    <p style={{ fontSize: 12.5, color: "var(--ink-muted)", margin: 0 }}>現在、自社案件への応募データはありません。</p>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 10 }}>
-                      {applications.map((app) => (
+                      {myReceivedApplications.map((app) => (
                         <div key={app.id} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: 14, fontSize: 12.5 }}>
                           <div style={{ fontWeight: 700, color: "#0f172a", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                             <span>👤 {app.name} <span style={{ fontSize: 11, color: "#0d9488", background: "#ccfbf1", padding: "2px 8px", borderRadius: 10, marginLeft: 4 }}>公認モニター</span></span>
@@ -1248,15 +1276,11 @@
                       const PlatIcon = PLATFORM_META[c.platform].icon;
                       const rarity = rarityFromValue(c.value);
                       const isFavorite = favoriteIds.has(c.id);
+                      const isFull = c.slotsFilled >= c.slotsTotal;
+                      const alreadyApplied = appliedCampaignIds.has(c.id);
 
                       return (
-                        <div key={c.id} className="mg-card" style={{ "--ring": RARITY_META[rarity].ring, "--glow": RARITY_META[rarity].glow }} onClick={() => {
-                          if (!currentUser) {
-                            setShowAuthModal(true);
-                          } else {
-                            setSelectedCampaignForApply(c);
-                          }
-                        }}>
+                        <div key={c.id} className="mg-card" style={{ "--ring": RARITY_META[rarity].ring, "--glow": RARITY_META[rarity].glow, opacity: isFull ? 0.75 : 1 }}>
                           <div className="mg-card-top">
                             <div className="mg-card-icon"><CatIcon size={22} strokeWidth={1.6} /></div>
                             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -1268,17 +1292,32 @@
                           </div>
                           <h3 className="mg-card-title">{c.title}</h3>
                           <p className="mg-card-brand">{c.brand}</p>
+                          {c.summary && (
+                            <p style={{ fontSize: 11.5, color: "#64748b", margin: "-4px 0 0", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{c.summary}</p>
+                          )}
                           <div className="mg-card-stats">
                             <span><Coins size={14} strokeWidth={1.8} /> {t("value")} ¥{c.value.toLocaleString()}</span>
                             <span><PlatIcon size={14} strokeWidth={1.8} /> {PLATFORM_META[c.platform].label}</span>
                           </div>
                           <div className="mg-card-foot">
-                            <span className="mg-slots"><Users size={13} strokeWidth={1.8} /> {c.slotsTotal - c.slotsFilled}/{c.slotsTotal} {t("slots")}</span>
+                            <span className="mg-slots" style={{ color: isFull ? "#e11d48" : "inherit" }}><Users size={13} strokeWidth={1.8} /> {c.slotsTotal - c.slotsFilled}/{c.slotsTotal} {t("slots")}{isFull && " (満員)"}</span>
                             <span className="mg-deadline"><Clock size={13} strokeWidth={1.8} /> 〜{c.deadline.slice(5).replace("-", "/")}</span>
                           </div>
-                          <button className="mg-auth-btn" style={{ width: "100%", justifyContent: "center", marginTop: 4, background: "#0f172a" }}>
-                            <Send size={13}/> このモニターに応募する
-                          </button>
+                          {isFull ? (
+                            <button disabled style={{ width: "100%", justifyContent: "center", marginTop: 4, background: "#cbd5e1", color: "#94a3b8", border: "none", padding: "8px 16px", borderRadius: 18, fontSize: 12, cursor: "not-allowed", display: "flex", alignItems: "center", gap: 5 }}>
+                              🚫 募集終了
+                            </button>
+                          ) : alreadyApplied ? (
+                            <button disabled style={{ width: "100%", justifyContent: "center", marginTop: 4, background: "#ccfbf1", color: "#0f766e", border: "1px solid #99f6e4", padding: "8px 16px", borderRadius: 18, fontSize: 12, cursor: "not-allowed", display: "flex", alignItems: "center", gap: 5 }}>
+                              ✅ 応募済み
+                            </button>
+                          ) : (
+                            <button className="mg-auth-btn" style={{ width: "100%", justifyContent: "center", marginTop: 4, background: "#0f172a" }} onClick={() => {
+                              if (!currentUser) { setShowAuthModal(true); } else { setSelectedCampaignForApply(c); }
+                            }}>
+                              <Send size={13}/> このモニターに応募する
+                            </button>
+                          )}
                         </div>
                       );
                     })}
