@@ -645,9 +645,9 @@
       );
     }
 
-    function AuthModal({ onClose, onRegisterSubmit, onLoginSubmit }) {
+    function AuthModal({ onClose, onRegisterSubmit, onLoginSubmit, initialIsLogin = false }) {
       const { t } = useT();
-      const [isLoginView, setIsLoginView] = useState(false);
+      const [isLoginView, setIsLoginView] = useState(initialIsLogin);
       const [regType, setRegType] = useState("monitor");
 
       const [name, setName] = useState("");
@@ -760,7 +760,7 @@
 
       const [showNotifications, setShowNotifications] = useState(false);
       const [favoriteIds, setFavoriteIds] = useState(new Set());
-      const [showAuthModal, setShowAuthModal] = useState(false);
+      const [authModalMode, setAuthModalMode] = useState(null); // null | "login" | "register"
       const [showCreateModal, setShowCreateModal] = useState(false);
       const [showFAQModal, setShowFAQModal] = useState(false);
       const [selectedCampaignForApply, setSelectedCampaignForApply] = useState(null);
@@ -991,9 +991,10 @@
 
             {toastMsg && <div className="mg-toast">{toastMsg}</div>}
 
-            {showAuthModal && (
+            {authModalMode && (
               <AuthModal
-                onClose={() => setShowAuthModal(false)}
+                initialIsLogin={authModalMode === "login"}
+                onClose={() => setAuthModalMode(null)}
                 onRegisterSubmit={handleRegisterSubmit}
                 onLoginSubmit={handleLoginSubmit}
               />
@@ -1086,7 +1087,10 @@
                     <button className="mg-auth-btn-ghost" onClick={() => { setCurrentUser(null); setRole("monitor"); localStorage.removeItem("mg_current_user"); }}><LogOut size={12}/> {t("btnLogout")}</button>
                   </div>
                 ) : (
-                  <button className="mg-auth-btn" onClick={() => setShowAuthModal(true)}><LogIn size={13}/> {t("btnLogin")}</button>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <button className="mg-auth-btn-ghost" onClick={() => setAuthModalMode("login")}><LogIn size={13}/> {t("btnLogin")}</button>
+                    <button className="mg-auth-btn" style={{ background: "#0d9488" }} onClick={() => setAuthModalMode("register")}><UserPlus size={13}/> {t("btnRegister")}</button>
+                  </div>
                 )}
               </div>
             </header>
@@ -1278,6 +1282,17 @@
                       </button>
                     </div>
                   )}
+
+                  {!currentUser && (
+                    <div style={{ marginTop: 20, display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                      <button className="mg-auth-btn" style={{ padding: "12px 24px", fontSize: 14, background: "#0d9488" }} onClick={() => setAuthModalMode("register")}>
+                        <UserPlus size={18}/> 今すぐ無料で新規会員登録
+                      </button>
+                      <button className="mg-auth-btn-ghost" style={{ padding: "12px 20px", fontSize: 14 }} onClick={() => setAuthModalMode("login")}>
+                        <LogIn size={18}/> ログイン
+                      </button>
+                    </div>
+                  )}
                 </section>
 
                 <div className="mg-ribbon"><ShieldCheck size={14}/> {t("ribbon")}</div>
@@ -1350,7 +1365,7 @@
                             </button>
                           ) : (
                             <button className="mg-auth-btn" style={{ width: "100%", justifyContent: "center", marginTop: 4, background: "#0f172a" }} onClick={() => {
-                              if (!currentUser) { setShowAuthModal(true); } else { setSelectedCampaignForApply(c); }
+                              if (!currentUser) { setAuthModalMode("register"); } else { setSelectedCampaignForApply(c); }
                             }}>
                               <Send size={13}/> このモニターに応募する
                             </button>
